@@ -1,6 +1,7 @@
 package by.sapegina.springblog.service;
 
 import by.sapegina.springblog.dto.RegisterRequest;
+import by.sapegina.springblog.entity.Email;
 import by.sapegina.springblog.entity.User;
 import by.sapegina.springblog.entity.VerificationToken;
 import by.sapegina.springblog.repository.UserRepository;
@@ -19,7 +20,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final VerificationTokenRepository verificationTokenRepository;
-
+    private final MailService mailService;
     @Transactional
     public void signup(RegisterRequest registerRequest){
         User user = new User();
@@ -32,6 +33,9 @@ public class AuthService {
         userRepository.save(user);
 
         String token = generateVerificationToken(user);
+
+//        mailService.sendMail(new Email("Please activate your account"),
+//                user.getEmail(),"..." + token));
     }
 
     private String generateVerificationToken(User user) {
