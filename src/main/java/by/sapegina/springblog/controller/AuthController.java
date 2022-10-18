@@ -1,5 +1,6 @@
 package by.sapegina.springblog.controller;
 
+import by.sapegina.springblog.dto.AuthenticationResponse;
 import by.sapegina.springblog.dto.LoginRequest;
 import by.sapegina.springblog.dto.RegisterRequest;
 import by.sapegina.springblog.service.AuthService;
@@ -25,7 +26,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public void login(@RequestBody LoginRequest loginRequest){
-        authService.login(loginRequest);
+    public AuthenticationResponse login(@RequestBody LoginRequest loginRequest){
+    return authService.login(loginRequest);
     }
 }

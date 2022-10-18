@@ -1,16 +1,19 @@
 package by.sapegina.springblog.service;
 
+import by.sapegina.springblog.dto.AuthenticationResponse;
 import by.sapegina.springblog.dto.LoginRequest;
 import by.sapegina.springblog.dto.RegisterRequest;
-import by.sapegina.springblog.entity.Email;
 import by.sapegina.springblog.entity.User;
 import by.sapegina.springblog.entity.VerificationToken;
 import by.sapegina.springblog.exceptions.TheHumanException;
 import by.sapegina.springblog.repository.UserRepository;
 import by.sapegina.springblog.repository.VerificationTokenRepository;
+import by.sapegina.springblog.security.JwtProvider;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +31,7 @@ public class AuthService {
     private final VerificationTokenRepository verificationTokenRepository;
     private final MailService mailService;
     private final AuthenticationManager authenticationManager;
+    private final JwtProvider jwtProvider;
     @Transactional
     public void signup(RegisterRequest registerRequest){
         User user = new User();
@@ -70,7 +74,10 @@ public class AuthService {
         userRepository.save(user);
     }
 
-    public void login(LoginRequest loginRequest) {
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),loginRequest.getPassword()));
+    public AuthenticationResponse login(LoginRequest loginRequest) {
+        Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),loginRequest.getPassword()));
+        SecurityContextHolder.getContext().setAuthentication(authenticate);
+        String token = jwtProvider.generateToken(authenticate);
+        return new AuthenticationResponse(token, loginRequest.getUsername());
     }
 }
