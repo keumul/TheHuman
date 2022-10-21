@@ -14,7 +14,9 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -48,7 +50,13 @@ public class AuthService {
 //        mailService.sendMail(new Email("Please activate your account"),
 //                user.getEmail(),"..." + token));
     }
-
+    @Transactional
+    public User getCurrentUser() {
+        Jwt principal = (Jwt) SecurityContextHolder.
+                getContext().getAuthentication().getPrincipal();
+        return userRepository.findByUsername(principal.getSubject())
+                .orElseThrow(() -> new UsernameNotFoundException("Error: User name not found - " + principal.getSubject()));
+    }
     private String generateVerificationToken(User user) {
         String token = UUID.randomUUID().toString(); //generate random id for other token
         VerificationToken verificationToken = new VerificationToken();
@@ -66,7 +74,7 @@ public class AuthService {
     }
 
     @Transactional
-    private void fetchUserAndEnable(VerificationToken verificationToken) {
+    public void fetchUserAndEnable(VerificationToken verificationToken) {
         @NotBlank(message = "Username is required!")
         String username = verificationToken.getUser().getUsername();
         User user = userRepository.findByUsername(username).orElseThrow(() -> new TheHumanException("Error: User not found! info: username is " + username));
