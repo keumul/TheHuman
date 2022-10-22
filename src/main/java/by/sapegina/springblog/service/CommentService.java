@@ -35,10 +35,9 @@ public class CommentService {
 
     public List<CommentsDto> getAllCommentsForPost(Long postId) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException(postId.toString()));
-        commentRepository.findByPost(post)
+        return commentRepository.findByPost(post)
                 .stream()
                 .map(commentsMapper::mapToDto).collect(toList());
-
     }
 
     public List<CommentsDto> getAllCommentsForUser(String userName) {
