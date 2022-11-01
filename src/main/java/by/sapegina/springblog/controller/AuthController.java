@@ -22,7 +22,7 @@ import static org.springframework.http.HttpStatus.OK;
 @AllArgsConstructor
 public class AuthController {
     private final AuthService authService;
-    ptivate final RefreshTokenService refreshTokenService;
+    private final RefreshTokenService refreshTokenService;
     @PostMapping("/signup")
     public ResponseEntity<String> signup(@RequestBody RegisterRequest registerRequest){
         authService.signup(registerRequest);
