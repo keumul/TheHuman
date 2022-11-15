@@ -4,6 +4,7 @@ import by.sapegina.springblog.dto.AuthenticationResponse;
 import by.sapegina.springblog.dto.LoginRequest;
 import by.sapegina.springblog.dto.RefreshTokenRequest;
 import by.sapegina.springblog.dto.RegisterRequest;
+import by.sapegina.springblog.entity.Email;
 import by.sapegina.springblog.entity.User;
 import by.sapegina.springblog.entity.VerificationToken;
 import by.sapegina.springblog.exceptions.TheHumanException;
@@ -29,6 +30,7 @@ import java.util.UUID;
 
 @Service
 @AllArgsConstructor
+@Transactional
 public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -49,9 +51,10 @@ public class AuthService {
         userRepository.save(user);
 
         String token = generateVerificationToken(user);
-
-//        mailService.sendMail(new Email("Please activate your account"),
-//                user.getEmail(),"..." + token));
+        mailService.sendMail(new Email("Please Activate your Account",
+                user.getEmail(), "Thank you for signing up to Spring Reddit, " +
+                "please click on the below url to activate your account : " +
+                "http://localhost:8080/api/auth/accountVerification/" + token));
     }
     @Transactional
     public User getCurrentUser() {
