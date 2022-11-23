@@ -1,16 +1,15 @@
 package by.sapegina.springblog.controller;
 
-import by.sapegina.springblog.dto.AuthenticationResponse;
-import by.sapegina.springblog.dto.LoginRequest;
-import by.sapegina.springblog.dto.RefreshTokenRequest;
-import by.sapegina.springblog.dto.RegisterRequest;
-import by.sapegina.springblog.entity.RefreshToken;
-import by.sapegina.springblog.repository.RefreshTokenRepository;
+import by.sapegina.springblog.dto.*;
+import by.sapegina.springblog.security.JwtProvider;
 import by.sapegina.springblog.service.AuthService;
 import by.sapegina.springblog.service.RefreshTokenService;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -22,7 +21,10 @@ import static org.springframework.http.HttpStatus.OK;
 @AllArgsConstructor
 public class AuthController {
     private final AuthService authService;
+    private final AuthenticationManager authenticationManager;
     private final RefreshTokenService refreshTokenService;
+    private final JwtProvider jwtTokenProvider;
+    final String TOKEN_PREFIX = "Bearer ";
     @PostMapping("/signup")
     public ResponseEntity<String> signup(@RequestBody RegisterRequest registerRequest){
         authService.signup(registerRequest);
@@ -35,8 +37,17 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public AuthenticationResponse login(@RequestBody LoginRequest loginRequest){
-    return authService.login(loginRequest);
+    public ResponseEntity<JWTTokenSuccessResponse> login(@RequestBody LoginRequest loginRequest){
+
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                loginRequest.getUsername(),
+                loginRequest.getPassword()
+        ));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String jwt = TOKEN_PREFIX + jwtTokenProvider.generateToken(authentication);
+
+        return ResponseEntity.ok(new JWTTokenSuccessResponse(true, jwt));
+    //return authService.login(loginRequest);
     }
 
     @PostMapping("refresh/token")
