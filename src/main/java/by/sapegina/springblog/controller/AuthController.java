@@ -21,44 +21,35 @@ import static org.springframework.http.HttpStatus.OK;
 @AllArgsConstructor
 public class AuthController {
     private final AuthService authService;
-    private final AuthenticationManager authenticationManager;
     private final RefreshTokenService refreshTokenService;
-    private final JwtProvider jwtTokenProvider;
-    final String TOKEN_PREFIX = "Bearer ";
+
     @PostMapping("/signup")
-    public ResponseEntity<String> signup(@RequestBody RegisterRequest registerRequest){
+    public ResponseEntity<String> signup(@RequestBody RegisterRequest registerRequest) {
         authService.signup(registerRequest);
-        return new ResponseEntity<>("User registration is successful", OK);
+        return new ResponseEntity<>("Info: User Registration Successful",
+                OK);
     }
+
     @GetMapping("accountVerification/{token}")
-    public ResponseEntity<String> verifyAccount(@PathVariable String token){
+    public ResponseEntity<String> verifyAccount(@PathVariable String token) {
         authService.verifyAccount(token);
-        return new ResponseEntity<>("Account successfully activated", OK);
+        return new ResponseEntity<>("Info: Account Activated Successfully", OK);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<JWTTokenSuccessResponse> login(@RequestBody LoginRequest loginRequest){
-
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                loginRequest.getUsername(),
-                loginRequest.getPassword()
-        ));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = TOKEN_PREFIX + jwtTokenProvider.generateToken(authentication);
-
-        return ResponseEntity.ok(new JWTTokenSuccessResponse(true, jwt));
-    //return authService.login(loginRequest);
+    public AuthenticationResponse login(@RequestBody LoginRequest loginRequest) {
+        return authService.login(loginRequest);
     }
 
-    @PostMapping("refresh/token")
-    public AuthenticationResponse refreshTokens(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest){
+    @PostMapping("/refresh/token")
+    public AuthenticationResponse refreshTokens(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest) {
         return authService.refreshToken(refreshTokenRequest);
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<String> logout(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest){
+    public ResponseEntity<String> logout(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest) {
         refreshTokenService.deleteRefreshToken(refreshTokenRequest.getRefreshToken());
-        return ResponseEntity.status(OK).body("Info: Refresh token deleted successfully!");
+        return ResponseEntity.status(OK).body("Info: Refresh Token Deleted Successfully!!");
     }
 
 }

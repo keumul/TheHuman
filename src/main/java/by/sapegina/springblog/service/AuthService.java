@@ -32,30 +32,31 @@ import java.util.UUID;
 @AllArgsConstructor
 @Transactional
 public class AuthService {
-    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
     private final VerificationTokenRepository verificationTokenRepository;
     private final MailService mailService;
     private final AuthenticationManager authenticationManager;
     private final JwtProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
-    @Transactional
-    public void signup(RegisterRequest registerRequest){
+
+    public void signup(RegisterRequest registerRequest) {
         User user = new User();
         user.setUsername(registerRequest.getUsername());
         user.setEmail(registerRequest.getEmail());
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-        user.setCreated(Instant.now()); //current time
-        user.setEnabled(false); //if user successful validated - true
+        user.setCreated(Instant.now());
+        user.setEnabled(false);
 
         userRepository.save(user);
 
         String token = generateVerificationToken(user);
         mailService.sendMail(new Email("Please Activate your Account",
-                user.getEmail(), "Thank you for signing up to Spring Reddit, " +
+                user.getEmail(), "Thank you for signing up to TheHuman, " +
                 "please click on the below url to activate your account : " +
                 "http://localhost:8080/api/auth/accountVerification/" + token));
     }
+
     @Transactional
     public User getCurrentUser() {
         Jwt principal = (Jwt) SecurityContextHolder.
@@ -63,8 +64,16 @@ public class AuthService {
         return userRepository.findByUsername(principal.getSubject())
                 .orElseThrow(() -> new UsernameNotFoundException("Error: User name not found - " + principal.getSubject()));
     }
+
+    private void fetchUserAndEnable(VerificationToken verificationToken) {
+        String username = verificationToken.getUser().getUsername();
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new TheHumanException("Error: User not found with name - " + username));
+        user.setEnabled(true);
+        userRepository.save(user);
+    }
+
     private String generateVerificationToken(User user) {
-        String token = UUID.randomUUID().toString(); //generate random id for other token
+        String token = UUID.randomUUID().toString();
         VerificationToken verificationToken = new VerificationToken();
         verificationToken.setToken(token);
         verificationToken.setUser(user);
@@ -75,24 +84,12 @@ public class AuthService {
 
     public void verifyAccount(String token) {
         Optional<VerificationToken> verificationToken = verificationTokenRepository.findByToken(token);
-        verificationToken.orElseThrow(() -> new TheHumanException("Error: Invalid Token!"));
-        fetchUserAndEnable(verificationToken.get());
-    }
-
-    @Transactional
-    public void fetchUserAndEnable(VerificationToken verificationToken) {
-        @NotBlank(message = "Username is required!")
-        String username = verificationToken.getUser().getUsername();
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new TheHumanException("Error: User not found! info: username is " + username));
-        user.setEnabled(true);
-        userRepository.save(user);
+        fetchUserAndEnable(verificationToken.orElseThrow(() -> new TheHumanException("Error: Invalid Token")));
     }
 
     public AuthenticationResponse login(LoginRequest loginRequest) {
-        Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),loginRequest.getPassword()));
-        System.out.println(loginRequest.getUsername());
-        System.out.println(loginRequest.getPassword());
-        System.out.println("Bitch you better be joking");
+        Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),
+                loginRequest.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authenticate);
         String token = jwtProvider.generateToken(authenticate);
         return AuthenticationResponse.builder()
@@ -101,11 +98,6 @@ public class AuthService {
                 .expiresAt(Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()))
                 .username(loginRequest.getUsername())
                 .build();
-    }
-
-    public boolean isLoggedIn() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return !(authentication instanceof AnonymousAuthenticationToken) && authentication.isAuthenticated();
     }
 
     public AuthenticationResponse refreshToken(RefreshTokenRequest refreshTokenRequest) {
@@ -117,5 +109,10 @@ public class AuthService {
                 .expiresAt(Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()))
                 .username(refreshTokenRequest.getUsername())
                 .build();
+    }
+
+    public boolean isLoggedIn() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return !(authentication instanceof AnonymousAuthenticationToken) && authentication.isAuthenticated();
     }
 }

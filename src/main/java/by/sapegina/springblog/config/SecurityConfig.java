@@ -37,6 +37,7 @@ import java.security.interfaces.RSAPublicKey;
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
     private final UserDetailsService userDetailsService;
 
     @Value("${jwt.public.key}")
@@ -56,7 +57,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         httpSecurity.cors().and()
                 .csrf().disable()
                 .authorizeHttpRequests(authorize -> authorize
-                        .antMatchers("/api/**")
+                        .antMatchers("/api/auth/**")
                         .permitAll()
                         .antMatchers(HttpMethod.GET, "/api/posts/")
                         .permitAll()
