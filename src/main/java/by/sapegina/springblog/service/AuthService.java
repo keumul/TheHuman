@@ -21,9 +21,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
-import javax.validation.constraints.NotBlank;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
@@ -52,22 +51,22 @@ public class AuthService {
 
         String token = generateVerificationToken(user);
         mailService.sendMail(new Email("Please Activate your Account",
-                user.getEmail(), "Thank you for signing up to TheHuman, " +
+                user.getEmail(), "Thank you for signing up to theHuman, " +
                 "please click on the below url to activate your account : " +
                 "http://localhost:8080/api/auth/accountVerification/" + token));
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public User getCurrentUser() {
         Jwt principal = (Jwt) SecurityContextHolder.
                 getContext().getAuthentication().getPrincipal();
         return userRepository.findByUsername(principal.getSubject())
-                .orElseThrow(() -> new UsernameNotFoundException("Error: User name not found - " + principal.getSubject()));
+                .orElseThrow(() -> new UsernameNotFoundException("User name not found - " + principal.getSubject()));
     }
 
     private void fetchUserAndEnable(VerificationToken verificationToken) {
         String username = verificationToken.getUser().getUsername();
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new TheHumanException("Error: User not found with name - " + username));
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new TheHumanException("User not found with name - " + username));
         user.setEnabled(true);
         userRepository.save(user);
     }
@@ -84,7 +83,7 @@ public class AuthService {
 
     public void verifyAccount(String token) {
         Optional<VerificationToken> verificationToken = verificationTokenRepository.findByToken(token);
-        fetchUserAndEnable(verificationToken.orElseThrow(() -> new TheHumanException("Error: Invalid Token")));
+        fetchUserAndEnable(verificationToken.orElseThrow(() -> new TheHumanException("Invalid Token")));
     }
 
     public AuthenticationResponse login(LoginRequest loginRequest) {

@@ -28,9 +28,8 @@ public class PostService {
     private final AuthService authService;
     private final PostMapper postMapper;
 
-    public Post save(PostRequest postRequest) {
-        User currentUser = authService.getCurrentUser();
-        return postMapper.map(postRequest, currentUser);
+    public void save(PostRequest postRequest) {
+        postRepository.save(postMapper.map(postRequest, authService.getCurrentUser()));
     }
 
     @Transactional(readOnly = true)

@@ -23,7 +23,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username){
         Optional<User> userOptional = userRepository.findByUsername(username);
-        User user = userOptional.orElseThrow(() -> new UsernameNotFoundException("Error: No user " + "found with username: " + username));
+        User user = userOptional
+                .orElseThrow(() -> new UsernameNotFoundException("Error: No user "
+                        + "found with username: " + username));
 
         return new org.springframework.security
                 .core.userdetails.User(user.getUsername(), user.getPassword(),

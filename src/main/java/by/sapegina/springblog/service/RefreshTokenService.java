@@ -22,7 +22,7 @@ public class RefreshTokenService {
 
         return refreshTokenRepository.save(refreshToken);
     }
-    public void validateRefreshToken(String token){
+    void validateRefreshToken(String token){
         refreshTokenRepository.findByToken(token)
                 .orElseThrow(() -> new TheHumanException("Error: Invalid refresh token!"));
     }

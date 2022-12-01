@@ -29,9 +29,9 @@ class MailService {
         };
         try {
             mailSender.send(messagePreparator);
-            log.info("Activation email sent!");
+            log.info("Info: Activation email sent!");
         } catch (MailException e) {
-            log.error("Exception occurred when sending mail", e);
+            log.error("Error: Exception occurred when sending mail", e);
             throw new TheHumanException("Error: Exception occurred when sending mail to "
                     + notificationEmail.getRecipient(), e);
         }

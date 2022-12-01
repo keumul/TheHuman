@@ -21,6 +21,7 @@ import static by.sapegina.springblog.entity.VoteType.UPVOTE;
 
 @Mapper(componentModel = "spring")
 public abstract class PostMapper {
+
     @Autowired
     private CommentRepository commentRepository;
     @Autowired
@@ -38,7 +39,6 @@ public abstract class PostMapper {
     @Mapping(target = "id", source = "postId")
     @Mapping(target = "userName", source = "user.username")
     @Mapping(target = "commentCount", expression = "java(commentCount(post))")
-    @Mapping(target = "duration", expression = "java(getDuration(post))")
     @Mapping(target = "upVote", expression = "java(isPostUpVoted(post))")
     @Mapping(target = "downVote", expression = "java(isPostDownVoted(post))")
     public abstract PostResponse mapToDto(Post post);
@@ -47,9 +47,6 @@ public abstract class PostMapper {
         return commentRepository.findByPost(post).size();
     }
 
-    String getDuration(Post post) {
-        return TimeAgo.using(post.getCreatedDate().toEpochMilli());
-    }
 
     boolean isPostUpVoted(Post post) {
         return checkVoteType(post, UPVOTE);
@@ -69,4 +66,5 @@ public abstract class PostMapper {
         }
         return false;
     }
+
 }
