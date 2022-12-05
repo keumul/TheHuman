@@ -2,12 +2,17 @@ package by.sapegina.springblog.service;
 
 import by.sapegina.springblog.dto.PostRequest;
 import by.sapegina.springblog.dto.PostResponse;
+import by.sapegina.springblog.entity.Comment;
 import by.sapegina.springblog.entity.Post;
 import by.sapegina.springblog.entity.User;
+import by.sapegina.springblog.entity.Vote;
 import by.sapegina.springblog.exceptions.PostNotFoundException;
+import by.sapegina.springblog.mapper.CommentsMapper;
 import by.sapegina.springblog.mapper.PostMapper;
+import by.sapegina.springblog.repository.CommentRepository;
 import by.sapegina.springblog.repository.PostRepository;
 import by.sapegina.springblog.repository.UserRepository;
+import by.sapegina.springblog.repository.VoteRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -27,11 +32,21 @@ public class PostService {
     private final UserRepository userRepository;
     private final AuthService authService;
     private final PostMapper postMapper;
+    private final CommentRepository commentRepository;
+    private final VoteRepository voteRepository;
 
     public void save(PostRequest postRequest) {
         postRepository.save(postMapper.map(postRequest, authService.getCurrentUser()));
     }
-
+    public void delete(Long id) {
+        for (Comment comment : commentRepository.findByPost(postRepository.getById(id))) {
+            commentRepository.delete(comment);
+        }
+        for (Vote vote : voteRepository.findByPost(postRepository.getById(id))){
+            voteRepository.delete(vote);
+        }
+        postRepository.delete(postRepository.getById(id));
+    }
     @Transactional(readOnly = true)
     public PostResponse getPost(Long id) {
         Post post = postRepository.findById(id)

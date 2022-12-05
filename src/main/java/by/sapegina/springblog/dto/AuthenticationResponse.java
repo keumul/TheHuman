@@ -16,4 +16,6 @@ public class AuthenticationResponse {
     private String refreshToken;
     private Instant expiresAt;
     private String username;
+    private boolean isAdmin;
+
 }

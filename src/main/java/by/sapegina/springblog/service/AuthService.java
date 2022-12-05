@@ -96,6 +96,7 @@ public class AuthService {
                 .refreshToken(refreshTokenService.generateRefreshToken().getToken())
                 .expiresAt(Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()))
                 .username(loginRequest.getUsername())
+                .isAdmin(userRepository.findByUsername(loginRequest.getUsername()).get().isAdmin())
                 .build();
     }
 

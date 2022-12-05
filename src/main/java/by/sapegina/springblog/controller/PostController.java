@@ -2,6 +2,7 @@ package by.sapegina.springblog.controller;
 
 import by.sapegina.springblog.dto.PostRequest;
 import by.sapegina.springblog.dto.PostResponse;
+import by.sapegina.springblog.service.AuthService;
 import by.sapegina.springblog.service.PostService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,8 +17,14 @@ import static org.springframework.http.ResponseEntity.status;
 @RequestMapping("/api/posts/")
 @AllArgsConstructor
 public class PostController {
-
     private final PostService postService;
+    private final AuthService authService;
+
+    @DeleteMapping("delete/{id}")
+    public ResponseEntity<Void> deletePost(@PathVariable Long id) {
+        postService.delete(id);
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
 
     @PostMapping
     public ResponseEntity<Void> createPost(@RequestBody PostRequest postRequest) {

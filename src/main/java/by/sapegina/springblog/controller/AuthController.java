@@ -3,8 +3,10 @@ package by.sapegina.springblog.controller;
 import by.sapegina.springblog.dto.*;
 import by.sapegina.springblog.security.JwtProvider;
 import by.sapegina.springblog.service.AuthService;
+import by.sapegina.springblog.service.PostService;
 import by.sapegina.springblog.service.RefreshTokenService;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +18,7 @@ import static org.springframework.http.HttpStatus.OK;
 @RequestMapping("/api/auth")
 @AllArgsConstructor
 public class AuthController {
+
 
     private final AuthService authService;
     private final RefreshTokenService refreshTokenService;
