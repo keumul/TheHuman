@@ -38,6 +38,7 @@ public class PostService {
     public void save(PostRequest postRequest) {
         postRepository.save(postMapper.map(postRequest, authService.getCurrentUser()));
     }
+    @Transactional
     public void delete(Long id) {
         for (Comment comment : commentRepository.findByPost(postRepository.getById(id))) {
             commentRepository.delete(comment);
@@ -46,6 +47,7 @@ public class PostService {
             voteRepository.delete(vote);
         }
         postRepository.delete(postRepository.getById(id));
+
     }
     @Transactional(readOnly = true)
     public PostResponse getPost(Long id) {
